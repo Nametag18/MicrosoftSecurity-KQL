@@ -1,0 +1,22 @@
+let DeviceInfoTable = (DeviceInfo
+| where OnboardingStatus != "Can be onboarded"
+| extend parsedfields = parse_json(LoggedOnUsers)
+| extend AccountDisplayName = tostring(parsedfields[0]["UserName"])
+| where AccountDisplayName != ""
+| summarize arg_max(Timestamp, *) by DeviceId
+| project DeviceName, DeviceId, AccountDisplayName);
+let users = (IdentityInfo
+| extend Country = tolower(Country)
+| distinct AccountDisplayName, AccountName, Department, Country);
+let TVMConfigAssessKB = DeviceTvmSecureConfigurationAssessmentKB
+| where ConfigurationSubcategory == 'Bitlocker';
+DeviceTvmSecureConfigurationAssessment
+| where ConfigurationSubcategory == 'Bitlocker' and IsCompliant != 1 and OSPlatform == 'Windows10'
+| join kind = leftouter DeviceInfoTable on DeviceId
+//| join kind = leftouter DeviceInfoTable on DeviceId // model and Vendor could be useful to identify VMs and prioritise laptops 
+| project DeviceName, IsCompliant,ConfigurationSubcategory, ConfigurationId, LastReportDate=Timestamp, OSPlatform, AccountDisplayName,  tostring(Context)
+| join kind = inner TVMConfigAssessKB on ConfigurationId
+| join kind = leftouter users on AccountDisplayName
+| project-away ConfigurationImpact, ConfigurationDescription, ConfigurationId1, ConfigurationSubcategory1, Tags, ConfigurationBenchmarks, ConfigurationCategory, Department, AccountName, AccountDisplayName1, RiskDescription, RemediationOptions
+| extend IsCompliant = case(IsCompliant == 0, "No", tostring(IsCompliant))
+| sort by LastReportDate desc 
