@@ -1,2 +1,3 @@
 # MicrosoftSecurity-KQL
-KQL Queries for M365 &amp; Azure Security Tools.
+Personal collection of KQL queries for use in Azure Sentinel & M365 Security Advanced Hunting.
+
