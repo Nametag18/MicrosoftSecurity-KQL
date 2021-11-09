@@ -1,3 +1,4 @@
+//THIS QUERY REPORTS ENDPOINTS WHERE BITLOCKER IS NOT ENABLED OR IS PAUSED
 let DeviceInfoTable = (DeviceInfo
 | where OnboardingStatus != "Can be onboarded"
 | extend parsedfields = parse_json(LoggedOnUsers)
