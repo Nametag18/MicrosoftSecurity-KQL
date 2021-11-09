@@ -1,5 +1,6 @@
 DeviceProcessEvents
-| where ProcessVersionInfoCompanyName has_any ("Teamviewer", "LogMeIn", "AnyDesk", "Splashtop", "VNC Connect", "RemotePC", "GoToMyPC", "ConnectWise")
+| where ProcessVersionInfoCompanyName has_any ("Teamviewer", "LogMeIn", "AnyDesk", "Splashtop", "VNC Connect", "RemotePC", "GoToMyPC", "ConnectWise", "Zoho", "GoToAssist", "join.me", "dameware", "showmypc", "RemoteToPC") or
+FileName has_any("Teamviewer", "LogMeIn", "AnyDesk", "Splashtop", "VNC Connect", "RemotePC", "GoToMyPC", "ConnectWise", "Zoho", "GoToAssist", "join.me", "dameware", "showmypc", "RemoteToPC") 
 | where ProcessVersionInfoProductName !contains "GoToMeeting" and ProcessVersionInfoProductName !contains "LastPass"
 | summarize Products=make_set(ProcessVersionInfoProductName), TotalProducts=dcount(ProcessVersionInfoProductName), ExecutionCount=count() by DeviceName, DeviceId
 | join kind = leftouter (DeviceInfo | summarize arg_max(Timestamp, *) by DeviceId | project DeviceId, DeviceType) on DeviceId
