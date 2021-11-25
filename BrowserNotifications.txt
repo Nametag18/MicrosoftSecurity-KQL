@@ -1,0 +1,8 @@
+DeviceProcessEvents
+| where InitiatingProcessCommandLine contains "--notification-launch-id"
+| project InitiatingProcessCommandLine, DeviceName
+| extend domain = tostring(split(InitiatingProcessCommandLine, "https://", 1))
+| extend domain2 = tostring(split(domain, "/", 0))
+| summarize TotalCount=count(), Devices=make_set(DeviceName) by domain2
+| where domain2 contains "news-central.org"
+| sort by TotalCount desc
