@@ -1,0 +1,23 @@
+let DeviceTypes = (DeviceInfo
+| where Timestamp >= ago(30d)
+| where isnotempty(DeviceType)
+| summarize arg_max(Timestamp, *) by DeviceName
+| project DeviceName, DeviceType);
+let UserDevices = (DeviceInfo
+| where Timestamp >= ago(30d)
+| where LoggedOnUsers != "[]"
+| summarize arg_max(Timestamp, *) by DeviceName
+| extend LastUser = tostring(parse_json(LoggedOnUsers).[0]["UserName"])
+| extend UserDomain = tostring(parse_json(LoggedOnUsers).[0].["DomainName"])
+| project DeviceName, LastUser, UserDomain);
+DeviceTvmSoftwareVulnerabilities
+| project SoftwareName, SoftwareVendor, CveId, DeviceName
+| join kind = leftouter (DeviceTvmSoftwareVulnerabilitiesKB | project CvssScore, CveId, PublishedDate) on CveId
+| summarize ["CVE's above CVSS 7.0"]=dcountif(CveId, CvssScore > 7.0), ["Total CVE's"]=dcount(CveId), ["Average CVSS Score"]=round(avg(CvssScore),1), ["Sum CVSSS Score"]=round(sum(CvssScore)) by DeviceName
+| join kind = leftouter UserDevices on DeviceName
+| join kind = leftouter DeviceTypes on DeviceName
+| project-away DeviceName1
+| project-away DeviceName2
+| extend DeviceType = case(DeviceName contains "VDI", "VDI", DeviceType)
+| where ["CVE's above CVSS 7.0"] != 0
+| sort by ['Sum CVSSS Score']
