@@ -1,0 +1,6 @@
+DeviceEvents
+| where ActionType contains "USB"
+| extend ProductName = tostring(parse_json(AdditionalFields).["ProductName"])
+| extend Manufacturer = tostring(parse_json(AdditionalFields).["Manufacturer"])
+| extend SerialNumber = tostring(parse_json(AdditionalFields).["SerialNumber"])
+| project Timestamp, DeviceName, ActionType, ProductName, Manufacturer, SerialNumber
