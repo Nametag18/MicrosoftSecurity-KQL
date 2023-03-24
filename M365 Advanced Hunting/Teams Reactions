@@ -1,0 +1,12 @@
+CloudAppEvents
+| where ActionType contains "react"
+| extend ForeignUser = tostring(parse_json(RawEventData).["ParticipantInfo"]["HasForeignTenantUsers"])
+| extend ParticipatingTenantIds = tostring(parse_json(RawEventData).["ParticipantInfo"]["ParticipatingTenantIds"])
+| extend CommunicationType = tostring(parse_json(RawEventData).["CommunicationType"])
+| extend ChatThreadId = tostring(parse_json(RawEventData).["ChatThreadId"])
+| extend ChatName = tostring(parse_json(RawEventData).["ChatName"])
+| extend TeamName = tostring(parse_json(RawEventData).["TeamName"]) 
+| extend TeamGuid = tostring(parse_json(RawEventData).["TeamGuid"])
+| extend ChannelName = tostring(parse_json(RawEventData).["ChannelName"])
+| summarize DistinctChats=dcount(ChatThreadId) by CommunicationType, ForeignUser
+| extend ContainsForeignUser = case(ForeignUser == "true", "Yes", "No")
